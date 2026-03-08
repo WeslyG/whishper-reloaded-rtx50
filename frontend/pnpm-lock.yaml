@@ -2010,8 +2010,8 @@ packages:
         optional: true
       sugarss:
         optional: true
-      terser:
-        optional: true
+      # terser:
+      #   optional: false
     dependencies:
       esbuild: 0.18.20
       postcss: 8.4.31

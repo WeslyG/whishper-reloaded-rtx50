@@ -8,6 +8,18 @@ from enum import Enum
 from typing import Annotated
 from backends.fasterwhisper import FasterWhisperBackend
 
+
+# import asyncio
+
+# async def Run():
+#     test = await transcribe_from_filename('./123.mp3', "small", "auto", DeviceType.cuda)
+#     print(test)
+
+# asyncio.run(Run())
+# print("End")
+
+# WHISPER_MODELS_DIR=./temp UPLOAD_DIR=. python3 main.py 
+
 app = FastAPI()
     
 @app.post("/transcribe/")
@@ -16,14 +28,16 @@ async def transcribe_endpoint(
     filename: str = None,
     model_size: ModelSize = ModelSize.small,
     language: Languages = Languages.auto,
-    device: str = "cpu",
+    device: str = "cuda",
     beam_size: int = 5,
     initial_prompt: str = None,
     hotwords: str = None,
 ):
+    print("Start a health")
     if device != "cpu" and device != "cuda":
         return {"detail": "Device must be either cpu or cuda"}
     print(f"Transcribing with model {model_size.value} on device {device}...")
+    # return { "status": "ok"}
 
     # Convert hotwords from comma-separated string to list[str] if needed
     hotwords_list = None
@@ -44,6 +58,7 @@ async def transcribe_endpoint(
 
 @app.get("/healthcheck/")
 async def healthcheck():
+    print("Get a qwe")
     return {"status": "healthy"}
 
 if __name__ == "__main__":

@@ -24,7 +24,4 @@ services:
       - 27017
     ports:
       - 27017:27017
-    command: mongod --logpath var/log/mongodb/mongod.log
-
-
-   
+    # command: mongod --logpath var/log/mongodb/mongod.log

@@ -5,10 +5,17 @@ services:
     container_name: whisper-api
     build:
       context: .
-      dockerfile: Dockerfile.cpu
+      dockerfile: Dockerfile.gpu
     ports:
       - "8000:8000"
     volumes:
-      - ./models:/app/models
+      - .:/app/
     env_file:
       - .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
