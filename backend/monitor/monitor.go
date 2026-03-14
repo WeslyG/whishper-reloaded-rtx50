@@ -116,11 +116,5 @@ func prepareMultipartFormData(t *models.Transcription) (*bytes.Buffer, *multipar
 		return nil, nil, err
 	}
 
-	err = writer.Close()
-	if err != nil {
-		log.Error().Err(err).Msg("Error closing writer")
-		return nil, nil, err
-	}
-
 	return body, writer, nil
 }

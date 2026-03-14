@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from models import ModelSize, Languages, DeviceType
 from transcribe import transcribe_file, transcribe_from_filename
 import uvicorn
@@ -25,13 +25,13 @@ app = FastAPI()
 @app.post("/transcribe/")
 async def transcribe_endpoint(
     file: UploadFile = File(None),
-    filename: str = None,
-    model_size: ModelSize = ModelSize.small,
-    language: Languages = Languages.auto,
-    device: str = "cuda",
-    beam_size: int = 5,
-    initial_prompt: str = None,
-    hotwords: str = None,
+    filename: str = Form(None),
+    model_size: ModelSize = Form(ModelSize.small),
+    language: Languages = Form(Languages.auto),
+    device: str = Form("cuda"),
+    beam_size: int = Form(5),
+    initial_prompt: str = Form(None),
+    hotwords: str = Form(None),
 ):
     print("Start a health")
     if device != "cpu" and device != "cuda":

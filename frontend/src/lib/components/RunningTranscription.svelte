@@ -1,12 +1,35 @@
 <script>
     export let tr;
     import {deleteTranscription} from "$lib/utils.js";
+
+    const formatModelName = (modelSize) => {
+        if (!modelSize) return null;
+
+        return modelSize
+            .split(".")
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(" ");
+    };
+
+    const formatMetaValue = (value) => {
+        if (!value) return null;
+
+        return value
+            .split(".")
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(" ");
+    };
 </script>
 
 <div class="alert alert-info p-3">
     <span class="loading loading-ring loading-md"></span>
     <span>
-        <p class="font-bold text-info-content text-md">{tr.fileName != "" ? tr.fileName.split("_WHSHPR_")[1] : tr.id}</p>
+        <p class="font-bold text-info-content text-md">
+            {tr.fileName != "" ? tr.fileName.split("_WHSHPR_")[1] : tr.id}
+            {#if formatModelName(tr.modelSize)} ({formatModelName(tr.modelSize)}){/if}
+            {#if formatMetaValue(tr.device)} ({formatMetaValue(tr.device)}){/if}
+            {#if formatMetaValue(tr.language)} ({formatMetaValue(tr.language)}){/if}
+        </p>
         <p class="font-mono text-info-content text-sm opacity-60">Waiting for transcription...</p>
     </span>
     <button on:click={deleteTranscription(tr.id)} class="btn btn-xs md:btn-sm btn-error">

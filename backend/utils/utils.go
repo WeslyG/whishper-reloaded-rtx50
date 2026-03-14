@@ -72,60 +72,78 @@ func DownloadMedia(t *models.Transcription) (string, error) {
 }
 
 func SendTranscriptionRequest(t *models.Transcription, body *bytes.Buffer, writer *multipart.Writer) (*models.WhisperResult, error) {
-   // Build the base URL
-   url := fmt.Sprintf("http://%v/transcribe", os.Getenv("ASR_ENDPOINT"))
+	// Build the base URL
+	url := fmt.Sprintf("http://%v/transcribe", os.Getenv("ASR_ENDPOINT"))
 
-   // Create form fields
-   _ = writer.WriteField("model_size", t.ModelSize)
-   _ = writer.WriteField("task", t.Task)
-   _ = writer.WriteField("language", t.Language)
-   _ = writer.WriteField("device", t.Device)
-   
-   if t.BeamSize > 0 {
-       _ = writer.WriteField("beam_size", fmt.Sprintf("%d", t.BeamSize))
-   }
-   if t.InitialPrompt != "" {
-       _ = writer.WriteField("initial_prompt", t.InitialPrompt)
-   }
-   if len(t.Hotwords) > 0 {
-       _ = writer.WriteField("hotwords", strings.Join(t.Hotwords, ","))
-   }
-   // Send transcription request to transcription service
-   req, err := http.NewRequest("POST", url, body)
-   if err != nil {
+	// Add transcription options to the multipart form before closing it.
+	if err := writer.WriteField("model_size", t.ModelSize); err != nil {
+		return nil, fmt.Errorf("write model_size field: %w", err)
+	}
+	if err := writer.WriteField("task", t.Task); err != nil {
+		return nil, fmt.Errorf("write task field: %w", err)
+	}
+	if err := writer.WriteField("language", t.Language); err != nil {
+		return nil, fmt.Errorf("write language field: %w", err)
+	}
+	if err := writer.WriteField("device", t.Device); err != nil {
+		return nil, fmt.Errorf("write device field: %w", err)
+	}
+
+	if t.BeamSize > 0 {
+		if err := writer.WriteField("beam_size", fmt.Sprintf("%d", t.BeamSize)); err != nil {
+			return nil, fmt.Errorf("write beam_size field: %w", err)
+		}
+	}
+	if t.InitialPrompt != "" {
+		if err := writer.WriteField("initial_prompt", t.InitialPrompt); err != nil {
+			return nil, fmt.Errorf("write initial_prompt field: %w", err)
+		}
+	}
+	if len(t.Hotwords) > 0 {
+		if err := writer.WriteField("hotwords", strings.Join(t.Hotwords, ",")); err != nil {
+			return nil, fmt.Errorf("write hotwords field: %w", err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		return nil, fmt.Errorf("close multipart writer: %w", err)
+	}
+
+	// Send transcription request to transcription service
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
 	   log.Debug().Err(err).Msg("Error creating request to transcription service")
 	   return nil, err
-   }
+	}
 
-   req.Header.Set("Content-Type", writer.FormDataContentType())
-   req.Header.Set("Accept", "application/json")
-   client := &http.Client{}
-   resp, err := client.Do(req)
-   if err != nil {
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Accept", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
 	   log.Error().Err(err).Msg("Error sending request")
 	   return nil, err
-   }
-   defer resp.Body.Close()
-   b, err := io.ReadAll(resp.Body)
-   if err != nil {
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
 	   log.Error().Err(err).Msg("Error reading response body")
 	   return nil, err
-   }
+	}
 
-   if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK {
 	   log.Error().Msgf("Response from %v: %v", url, string(b))
 	   log.Error().Err(err).Msgf("Invalid response status %v:", resp.StatusCode)
 	   return nil, errors.New("invalid status")
-   }
+	}
 
-   var asrResponse *models.WhisperResult
-   if err := json.Unmarshal(b, &asrResponse); err != nil {
+	var asrResponse *models.WhisperResult
+	if err := json.Unmarshal(b, &asrResponse); err != nil {
 	   log.Error().Err(err).Msg("Error decoding response")
 	   log.Error().Msgf("ASR Response: %+v\n", b)
 	   return nil, err
-   }
+	}
 
-   return asrResponse, nil
+	return asrResponse, nil
 }
 
 func CheckTranscriptionServiceHealth() (ok bool, message string) {

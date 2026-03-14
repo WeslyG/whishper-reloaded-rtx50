@@ -5,6 +5,24 @@
     export let tr;
     export let languagesAvailable;
 
+    const formatModelName = (modelSize) => {
+        if (!modelSize) return null;
+
+        return modelSize
+            .split(".")
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(" ");
+    };
+
+    const formatMetaValue = (value) => {
+        if (!value) return null;
+
+        return value
+            .split(".")
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(" ");
+    };
+
     const dispatch = createEventDispatcher();
     let download = () => {
         dispatch('download', tr); // emit a custom event with the transcription as detail
@@ -23,7 +41,12 @@
 <div class="alert alert-success p-3">
     <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
     <span>
-        <p class="font-bold text-info-content text-md">{tr.fileName.split("_WHSHPR_")[1]}</p>
+        <p class="font-bold text-info-content text-md">
+            {tr.fileName.split("_WHSHPR_")[1]}
+            {#if formatModelName(tr.modelSize)} ({formatModelName(tr.modelSize)}){/if}
+            {#if formatMetaValue(tr.device)} ({formatMetaValue(tr.device)}){/if}
+            {#if formatMetaValue(tr.language)} ({formatMetaValue(tr.language)}){/if}
+        </p>
         <p class="font-mono text-info-content text-sm opacity-60 flex space-x-2 md:space-x-4 lg:space-x-8">
             <span class="space-x-1">
                 <span class="font-bold text-xs">{new Date(Math.round(tr.result.duration) * 1000).toISOString().substr(11, 8)} long</span>
