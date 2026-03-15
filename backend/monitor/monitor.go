@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -29,7 +30,9 @@ func StartMonitor(s *api.Server) {
 					err := transcribe(s, pt)
 					if err != nil {
 						log.Error().Err(err).Msg("Error transcribing")
+						finishedAt := time.Now().UTC()
 						pt.Status = models.TranscriptionStatusError
+						pt.FinishedAt = &finishedAt
 						ut, err := s.Db.UpdateTranscription(pt)
 						if err != nil {
 							log.Error().Err(err).Msg("Error updating transcription")
@@ -45,7 +48,10 @@ func StartMonitor(s *api.Server) {
 
 func transcribe(s *api.Server, t *models.Transcription) error {
 	// Update transcription status
+	startedAt := time.Now().UTC()
 	t.Status = models.TranscriptionStatusRunning
+	t.StartedAt = &startedAt
+	t.FinishedAt = nil
 	log.Debug().Msgf("Updating transcription %v", t)
 	_, err := s.Db.UpdateTranscription(t)
 	if err != nil {
@@ -79,9 +85,11 @@ func transcribe(s *api.Server, t *models.Transcription) error {
 		return err
 	}
 
+	finishedAt := time.Now().UTC()
 	t.Result = *res
 	t.Translations = []models.Translation{}
 	t.Status = models.TranscriptionStatusDone
+	t.FinishedAt = &finishedAt
 	_, err = s.Db.UpdateTranscription(t)
 	if err != nil {
 		log.Error().Err(err).Msg("Error updating transcription")

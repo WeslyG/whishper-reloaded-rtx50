@@ -1,27 +1,9 @@
 <!-- SuccessTranscription.svelte -->
 <script>
     import {createEventDispatcher} from 'svelte';
-    import {deleteTranscription} from "$lib/utils.js";
+    import {deleteTranscription, formatDurationMs, formatMetaValue, getTranscriptionRuntimeMs} from "$lib/utils.js";
     export let tr;
     export let languagesAvailable;
-
-    const formatModelName = (modelSize) => {
-        if (!modelSize) return null;
-
-        return modelSize
-            .split(".")
-            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-            .join(" ");
-    };
-
-    const formatMetaValue = (value) => {
-        if (!value) return null;
-
-        return value
-            .split(".")
-            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-            .join(" ");
-    };
 
     const dispatch = createEventDispatcher();
     let download = () => {
@@ -36,6 +18,8 @@
     let upload = () => {
         dispatch('upload', tr); // emit a custom event with the transcription as detail
     }
+
+    $: transcriptionRuntime = formatDurationMs(getTranscriptionRuntimeMs(tr));
 </script>
 
 <div class="alert alert-success p-3">
@@ -43,7 +27,7 @@
     <span>
         <p class="font-bold text-info-content text-md">
             {tr.fileName.split("_WHSHPR_")[1]}
-            {#if formatModelName(tr.modelSize)} ({formatModelName(tr.modelSize)}){/if}
+            {#if formatMetaValue(tr.modelSize)} ({formatMetaValue(tr.modelSize)}){/if}
             {#if formatMetaValue(tr.device)} ({formatMetaValue(tr.device)}){/if}
             {#if formatMetaValue(tr.language)} ({formatMetaValue(tr.language)}){/if}
         </p>
@@ -51,6 +35,11 @@
             <span class="space-x-1">
                 <span class="font-bold text-xs">{new Date(Math.round(tr.result.duration) * 1000).toISOString().substr(11, 8)} long</span>
             </span>
+            {#if transcriptionRuntime}
+                <span class="space-x-1">
+                    <span class="font-bold text-xs">{transcriptionRuntime} runtime</span>
+                </span>
+            {/if}
             <span class="space-x-1">
                 <span class="font-bold text-xs">{tr.translations.length} translations</span>
             </span>

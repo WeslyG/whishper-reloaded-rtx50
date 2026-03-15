@@ -1,24 +1,22 @@
 <script>
+    import {onDestroy, onMount} from "svelte";
     export let tr;
-    import {deleteTranscription} from "$lib/utils.js";
+    import {deleteTranscription, formatDurationMs, formatMetaValue, getTranscriptionRuntimeMs} from "$lib/utils.js";
 
-    const formatModelName = (modelSize) => {
-        if (!modelSize) return null;
+    let now = Date.now();
+    let timerId;
 
-        return modelSize
-            .split(".")
-            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-            .join(" ");
-    };
+    onMount(() => {
+        timerId = setInterval(() => {
+            now = Date.now();
+        }, 1000);
+    });
 
-    const formatMetaValue = (value) => {
-        if (!value) return null;
+    onDestroy(() => {
+        clearInterval(timerId);
+    });
 
-        return value
-            .split(".")
-            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-            .join(" ");
-    };
+    $: transcriptionRuntime = formatDurationMs(getTranscriptionRuntimeMs(tr, now));
 </script>
 
 <div class="alert alert-info p-3">
@@ -26,11 +24,16 @@
     <span>
         <p class="font-bold text-info-content text-md">
             {tr.fileName != "" ? tr.fileName.split("_WHSHPR_")[1] : tr.id}
-            {#if formatModelName(tr.modelSize)} ({formatModelName(tr.modelSize)}){/if}
+            {#if formatMetaValue(tr.modelSize)} ({formatMetaValue(tr.modelSize)}){/if}
             {#if formatMetaValue(tr.device)} ({formatMetaValue(tr.device)}){/if}
             {#if formatMetaValue(tr.language)} ({formatMetaValue(tr.language)}){/if}
         </p>
-        <p class="font-mono text-info-content text-sm opacity-60">Waiting for transcription...</p>
+        <p class="font-mono text-info-content text-sm opacity-60 flex flex-wrap gap-x-3 gap-y-1">
+            <span>Waiting for transcription...</span>
+            {#if transcriptionRuntime}
+                <span class="font-bold text-xs">{transcriptionRuntime} runtime</span>
+            {/if}
+        </p>
     </span>
     <button on:click={deleteTranscription(tr.id)} class="btn btn-xs md:btn-sm btn-error">
         <span class="tooltip flex items-center justify-center" data-tip="Delete">

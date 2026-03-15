@@ -114,6 +114,43 @@ export const getRandomSentence = function () {
     return randomSentence;
 }
 
+export const formatMetaValue = function (value) {
+    if (!value) return null;
+
+    return value
+        .split(".")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+}
+
+export const getTimestampMs = function (value) {
+    if (!value) return null;
+
+    const timestamp = new Date(value).getTime();
+    return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+export const getTranscriptionRuntimeMs = function (transcription, now = Date.now()) {
+    const startedAt = getTimestampMs(transcription?.startedAt);
+    if (startedAt === null) return null;
+
+    const finishedAt = getTimestampMs(transcription?.finishedAt);
+    const endAt = finishedAt ?? now;
+
+    return Math.max(0, endAt - startedAt);
+}
+
+export const formatDurationMs = function (durationMs) {
+    if (durationMs === null || durationMs === undefined) return null;
+
+    const totalSeconds = Math.max(0, Math.floor(durationMs / 1000));
+    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+
+    return `${hours}:${minutes}:${seconds}`;
+}
+
 // Expects a segments array with start, end and text properties
 export const downloadSRT = function (jsonData, title) {
     let srtContent = '';

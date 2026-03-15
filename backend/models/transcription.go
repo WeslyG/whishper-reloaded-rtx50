@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	ltr "github.com/snakesel/libretranslate"
@@ -10,19 +11,21 @@ import (
 )
 
 type Transcription struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Status       int                `bson:"status" json:"status"`
-	Language     string             `bson:"language" json:"language"`
-	ModelSize    string             `bson:"modelSize" json:"modelSize"`
-	Task         string             `bson:"task" json:"task"`
-	Device       string             `bson:"device" json:"device"`
-	FileName     string             `bson:"fileName" json:"fileName"`
-	SourceUrl    string             `bson:"sourceUrl" json:"sourceUrl"`
-	BeamSize     int                `bson:"beam_size" json:"beam_size"`
-	InitialPrompt string            `bson:"initial_prompt" json:"initial_prompt"`
-	Hotwords     []string           `bson:"hotwords" json:"hotwords"`
-	Result       WhisperResult      `bson:"result" json:"result"`
-	Translations []Translation      `bson:"translations" json:"translations"`
+	ID            primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Status        int                `bson:"status" json:"status"`
+	Language      string             `bson:"language" json:"language"`
+	ModelSize     string             `bson:"modelSize" json:"modelSize"`
+	Task          string             `bson:"task" json:"task"`
+	Device        string             `bson:"device" json:"device"`
+	FileName      string             `bson:"fileName" json:"fileName"`
+	SourceUrl     string             `bson:"sourceUrl" json:"sourceUrl"`
+	BeamSize      int                `bson:"beam_size" json:"beam_size"`
+	InitialPrompt string             `bson:"initial_prompt" json:"initial_prompt"`
+	Hotwords      []string           `bson:"hotwords" json:"hotwords"`
+	StartedAt     *time.Time         `bson:"startedAt,omitempty" json:"startedAt,omitempty"`
+	FinishedAt    *time.Time         `bson:"finishedAt,omitempty" json:"finishedAt,omitempty"`
+	Result        WhisperResult      `bson:"result" json:"result"`
+	Translations  []Translation      `bson:"translations" json:"translations"`
 }
 
 func (t *Transcription) Translate(target string) error {

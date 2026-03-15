@@ -3,7 +3,18 @@ export type Transcription = {
     duration: number;
     segments: Segment[];
     id: string;
+    status: number;
+    fileName: string;
+    modelSize?: string;
+    device?: string;
+    startedAt?: string;
+    finishedAt?: string;
     translations: Translation[];
+    result?: {
+        duration: number;
+        text: string;
+        segments: Segment[];
+    };
 }
 
 export type Segment = {
